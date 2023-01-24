@@ -13,7 +13,7 @@ namespace LetsSpeak
         public string VerificaTermo()
         {
             Console.Write("Digite um termo: ");
-            string palavra = Console.ReadLine();
+            string palavra = Console.ReadLine().ToLower();
             while (string.IsNullOrEmpty(palavra))
             {
                 Console.WriteLine("termo incorreto!");
@@ -69,26 +69,24 @@ namespace LetsSpeak
             }
             return idiomaticas;
         }
-        public string ValidaPalavras()
-        {
-            Console.Write("Digite um termo: ");
-            string termo = Console.ReadLine();
-            Console.Write("Digite o significado: ");
-            string significado = Console.ReadLine();
-            return $"{termo}: {significado}";
-        }
-
         public void InseriPalavras()
         {
-            Console.Write("Digite um termo: ");
-            string termo = Console.ReadLine();
-            Console.Write("Digite o significado: ");
-            string significado = Console.ReadLine();
+            string termo;
+            string significado;
+            do
+            {
+                Console.Write("Digite um termo: ");
+                termo = Console.ReadLine().ToLower();
+                Console.Write("Digite o significado: ");
+                significado = Console.ReadLine().ToLower();
+            } while (termo == null || significado == null);
+            
             try
             {
                 using (StreamWriter sw = File.AppendText(Path))
                 {
                     sw.WriteLine($"{termo}: {significado}");
+                    Console.WriteLine("Termo e significado adicionado com sucesso!");
                     sw.Close();
                 }
             }
