@@ -1,71 +1,64 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.IO;
+using System.Text.RegularExpressions;
 
 namespace LetsSpeak
 {
     public class Palavras
     {
-        private static Regex _Regex;
-
-        public Palavras(string palavra)
+        public string Path { get; set; }
+        public Palavras(string path)
         {
-            _Regex = new Regex(@"\b(?<name>" + palavra + ")\\b", RegexOptions.IgnoreCase);
+            Path = path;
         }
-        public bool ValidaPalavra(string palavra)
+        public string VerificaTermo()
         {
-            Match match = _Regex.Match(palavra);
-            if (match.Groups["name"].Success)
+            Console.Write("Digite um termo: ");
+            string palavra = Console.ReadLine();
+            while (string.IsNullOrEmpty(palavra))
             {
-                return match.Success;
+                Console.WriteLine("termo incorreto!");
+                Console.Write("Digite um termo: ");
+                palavra = Console.ReadLine();
             }
-            return false;
+            return palavra;
+            Console.Clear();
         }
-        public void VerificaTermo(Dictionary<string, string> palavras)
+        public void ConsultaPalavra(string palavra)
         {
-            int count = 0;
-            foreach (var item in palavras)
+            List<string> idio = BuscaTermos(palavra);
+            if (idio.Count > 0)
             {
-                if (!palavras.ContainsKey(item.Key))
+                foreach (var item in idio)
                 {
-                    count++;
+                    string termo = item.Split(":")[0];
+                    string sign = item.Split(":")[1];
+                    Console.WriteLine($"Termo: {termo}\nSignificado: {sign}\n");
                 }
-            }
-            if (count > 0)
-            {
-                Console.WriteLine("Termo não encontrado");
-                count = 0;
             }
             else
             {
-                ConsultaPalavra(palavras);
-                return;
+                Console.WriteLine("Termo não encontrado");
             }
+
         }
-        public void ConsultaPalavra(Dictionary<string, string> palavra)
+        public List<string> BuscaTermos(string termo)
         {
-            var result = from pl in palavra
-                         where ValidaPalavra(pl.Key)
-                         select pl;
-            foreach (KeyValuePair<string, string> item in result)
-            {
-                Console.WriteLine($"Termo: {item.Key} ==> Significado: {item.Value}");
-            }
-            result = null;
-        }
-        public void BuscaPalavra(string path)
-        {
-            Dictionary<string, string> idiomaticas = new();
+            List<string> idiomaticas = new();
             try
             {
-                using (StreamReader sr = File.OpenText(path))
+                using (StreamReader sr = File.OpenText(Path))
                 {
                     while (!sr.EndOfStream)
                     {
-                        string chave = string.Empty;
-                        string valor = string.Empty;
+                        string temp = string.Empty;
+                        string significado = string.Empty;
                         string line = sr.ReadLine();
-                        chave = line.Split(':')[0];
-                        valor = line.Split(':')[1];
-                        idiomaticas.Add(chave, valor);
+                        temp = line.Split(':')[0];
+                        significado = line.Split(':')[1];
+                        if (temp.Contains(termo))
+                        {
+                            idiomaticas.Add(temp + ":" + significado);
+                        }
                     }
                 }
             }
@@ -74,22 +67,36 @@ namespace LetsSpeak
                 Console.WriteLine("Ocorreu um erro");
                 Console.WriteLine(e.Message);
             }
-            VerificaTermo(idiomaticas);
+            return idiomaticas;
+        }
+        public string ValidaPalavras()
+        {
+            Console.Write("Digite um termo: ");
+            string termo = Console.ReadLine();
+            Console.Write("Digite o significado: ");
+            string significado = Console.ReadLine();
+            return $"{termo}: {significado}";
         }
 
-
-        public void InseriPalavras(string path, string chave, string valor)
+        public void InseriPalavras()
         {
-            Dictionary<string, string> idiomaticas = new();
-
+            Console.Write("Digite um termo: ");
+            string termo = Console.ReadLine();
+            Console.Write("Digite o significado: ");
+            string significado = Console.ReadLine();
             try
             {
-
+                using (StreamWriter sw = File.AppendText(Path))
+                {
+                    sw.WriteLine($"{termo}: {significado}");
+                    sw.Close();
+                }
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
-                throw;
+                Console.WriteLine("Ocorreu um erro");
+                Console.WriteLine(e.Message);
             }
         }
     }
